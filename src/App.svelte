@@ -8,7 +8,7 @@
   let loading = false;
   let error = null;
 
-  const API_BASE = import.meta.env.PROD ? '/api' : 'https://epochzone-production.up.railway.app/api';
+  const API_BASE = import.meta.env.PROD ? 'https://epochzone-production.up.railway.app/api' : 'https://localhost:5173/api';
 
   onMount(async () => {
     await loadTimezones();
