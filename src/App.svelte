@@ -192,7 +192,7 @@
     }
   }
 
-  function formatConvertTime(isoString) {
+  function formatConvertTime(isoString, timezone) {
     const date = new Date(isoString);
     return date.toLocaleString('en-US', {
       weekday: 'long',
@@ -202,6 +202,7 @@
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
+      timeZone: timezone,
     });
   }
 
@@ -390,7 +391,7 @@
           <div class="tz-column">
             <div class="tz-label">From</div>
             <h3 class="tz-name">{convertResult.from.timezone.replace(/_/g, ' ')}</h3>
-            <div class="tz-time">{formatConvertTime(convertResult.from.datetime)}</div>
+            <div class="tz-time">{formatConvertTime(convertResult.from.datetime, convertResult.from.timezone)}</div>
             <div class="tz-meta">
               <span class="label">UTC Offset:</span>
               <span class="value">{convertResult.from.utc_offset}</span>
@@ -407,7 +408,7 @@
           <div class="tz-column">
             <div class="tz-label">To</div>
             <h3 class="tz-name">{convertResult.to.timezone.replace(/_/g, ' ')}</h3>
-            <div class="tz-time">{formatConvertTime(convertResult.to.datetime)}</div>
+            <div class="tz-time">{formatConvertTime(convertResult.to.datetime, convertResult.to.timezone)}</div>
             <div class="tz-meta">
               <span class="label">UTC Offset:</span>
               <span class="value">{convertResult.to.utc_offset}</span>
