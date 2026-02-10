@@ -133,7 +133,7 @@
     {/if}
 
     <footer>
-      Built with Rust + Svelte
+      Powered by Rust + Svelte
     </footer>
   </div>
 </main>
