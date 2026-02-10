@@ -7,10 +7,13 @@
   let timezoneInfo = null;
   let loading = false;
   let error = null;
+  let highlightedIndex = -1;
+  let searchInput;
 
-  const API_BASE = import.meta.env.PROD ? 'https://epochzone-production.up.railway.app/api' : 'https://localhost:5173/api';
+  const API_BASE = import.meta.env.PROD ? 'https://epochzone-production.up.railway.app/api' : 'https://epochzone-production.up.railway.app/api';
 
   onMount(async () => {
+    searchInput.focus();
     await loadTimezones();
   });
 
@@ -47,7 +50,26 @@
   function handleTimezoneSelect(timezone) {
     selectedTimezone = timezone;
     searchQuery = timezone.replace(/_/g, ' ');
+    highlightedIndex = -1;
     fetchTimezoneInfo();
+  }
+
+  function handleKeydown(event) {
+    if (!showDropdown) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      highlightedIndex = (highlightedIndex + 1) % filteredTimezones.length;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      highlightedIndex = highlightedIndex <= 0 ? filteredTimezones.length - 1 : highlightedIndex - 1;
+    } else if (event.key === 'Enter' && highlightedIndex >= 0) {
+      event.preventDefault();
+      handleTimezoneSelect(filteredTimezones[highlightedIndex].name);
+    } else if (event.key === 'Escape') {
+      searchQuery = '';
+      highlightedIndex = -1;
+    }
   }
 
   function formatTime(isoString) {
@@ -81,17 +103,20 @@
       <div class="search-box">
         <input
           type="text"
+          bind:this={searchInput}
           bind:value={searchQuery}
-          on:input={() => selectedTimezone = ''}
+          on:input={() => { selectedTimezone = ''; highlightedIndex = -1; }}
+          on:keydown={handleKeydown}
           placeholder="Search for a timezone..."
           class="search-input"
         />
         
         {#if showDropdown}
           <div class="dropdown">
-            {#each filteredTimezones as tz}
+            {#each filteredTimezones as tz, i}
               <button
                 class="dropdown-item"
+                class:highlighted={i === highlightedIndex}
                 on:click={() => handleTimezoneSelect(tz.name)}
               >
                 {tz.display_name}
@@ -227,7 +252,8 @@
     transition: background-color 0.1s;
   }
 
-  .dropdown-item:hover {
+  .dropdown-item:hover,
+  .dropdown-item.highlighted {
     background-color: #f1f3f4;
   }
 
