@@ -10,7 +10,9 @@
   let highlightedIndex = -1;
   let searchInput;
 
-  const API_BASE = import.meta.env.PROD ? 'https://epochzone-production.up.railway.app/api' : 'https://epochzone-production.up.railway.app/api';
+  const API_BASE = import.meta.env.PROD ? 'https://epochzone-production.up.railway.app/api' : '/api';
+  const API_KEY = import.meta.env.VITE_API_KEY || '';
+  const apiHeaders = API_KEY ? { 'X-API-Key': API_KEY } : {};
 
   onMount(async () => {
     searchInput.focus();
@@ -19,7 +21,7 @@
 
   async function loadTimezones() {
     try {
-      const response = await fetch(`${API_BASE}/timezones`);
+      const response = await fetch(`${API_BASE}/timezones`, { headers: apiHeaders });
       timezones = await response.json();
     } catch (err) {
       console.error('Failed to load timezones:', err);
@@ -35,7 +37,7 @@
     let encodedSelectedTimezone = encodeURIComponent(selectedTimezone);
 
     try {
-      const response = await fetch(`${API_BASE}/time/${encodedSelectedTimezone}`);
+      const response = await fetch(`${API_BASE}/time/${encodedSelectedTimezone}`, { headers: apiHeaders });
       if (!response.ok) {
         throw new Error('Failed to fetch timezone info');
       }
