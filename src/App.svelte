@@ -344,7 +344,7 @@
 <main>
   <div class="container">
     <div class="logo">
-      <h1>🌍 Epoch Zone</h1>
+      <h1><span class="logo-accent">Epoch</span> Zone</h1>
     </div>
 
     <div class="mode-toggle">
@@ -593,7 +593,7 @@
     {/if}
 
     <footer>
-      Powered by Rust + Svelte
+      Timezone tools — fast and simple · © 2026 Epoch Zone
     </footer>
   </div>
 </main>
@@ -630,6 +630,10 @@
     font-weight: 300;
     color: #202124;
     margin: 0;
+  }
+
+  .logo-accent {
+    color: #1a73e8;
   }
 
   .mode-toggle {
