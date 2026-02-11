@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
 
   let timezones = [];
   let mode = 'lookup';
@@ -25,6 +25,13 @@
   let fromHighlightedIndex = -1;
   let toHighlightedIndex = -1;
 
+  // World Clock mode state
+  let worldClocks = [];
+  let worldClockQuery = '';
+  let worldClockHighlightedIndex = -1;
+  let currentTick = new Date();
+  let tickInterval = null;
+
   const API_BASE = import.meta.env.PROD ? 'https://epochzone-production.up.railway.app/api' : '/api';
   const API_KEY = import.meta.env.VITE_API_KEY || '';
   const apiHeaders = API_KEY ? { 'X-API-Key': API_KEY } : {};
@@ -32,6 +39,12 @@
   onMount(async () => {
     searchInput?.focus();
     await loadTimezones();
+    loadWorldClocks();
+    startTicking();
+  });
+
+  onDestroy(() => {
+    stopTicking();
   });
 
   async function loadTimezones() {
@@ -207,6 +220,99 @@
     });
   }
 
+  // World Clock functions
+  function startTicking() {
+    tickInterval = setInterval(() => {
+      currentTick = new Date();
+    }, 1000);
+  }
+
+  function stopTicking() {
+    if (tickInterval) {
+      clearInterval(tickInterval);
+      tickInterval = null;
+    }
+  }
+
+  async function loadWorldClocks() {
+    try {
+      const stored = localStorage.getItem('epochzone-world-clocks');
+      if (!stored) return;
+      const names = JSON.parse(stored);
+      if (!Array.isArray(names) || names.length === 0) return;
+      const results = await Promise.all(
+        names.map(async (tz) => {
+          try {
+            const response = await fetch(`${API_BASE}/time/${encodeURIComponent(tz)}`, { headers: apiHeaders });
+            if (!response.ok) return null;
+            const data = await response.json();
+            return { timezone: data.timezone, utc_offset: data.utc_offset, abbreviation: data.abbreviation, is_dst: data.is_dst };
+          } catch {
+            return null;
+          }
+        })
+      );
+      worldClocks = results.filter(Boolean);
+    } catch (err) {
+      console.error('Failed to load world clocks:', err);
+    }
+  }
+
+  function saveWorldClocks() {
+    localStorage.setItem('epochzone-world-clocks', JSON.stringify(worldClocks.map(c => c.timezone)));
+  }
+
+  async function addWorldClock(timezoneName) {
+    if (worldClocks.some(c => c.timezone === timezoneName)) return;
+    try {
+      const response = await fetch(`${API_BASE}/time/${encodeURIComponent(timezoneName)}`, { headers: apiHeaders });
+      if (!response.ok) return;
+      const data = await response.json();
+      worldClocks = [...worldClocks, { timezone: data.timezone, utc_offset: data.utc_offset, abbreviation: data.abbreviation, is_dst: data.is_dst }];
+      saveWorldClocks();
+    } catch (err) {
+      console.error('Failed to add world clock:', err);
+    }
+  }
+
+  function removeWorldClock(timezoneName) {
+    worldClocks = worldClocks.filter(c => c.timezone !== timezoneName);
+    saveWorldClocks();
+  }
+
+  function handleWorldClockSelect(tz) {
+    addWorldClock(tz);
+    worldClockQuery = '';
+    worldClockHighlightedIndex = -1;
+  }
+
+  function handleWorldClockKeydown(event) {
+    if (!worldClockDropdown) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      worldClockHighlightedIndex = (worldClockHighlightedIndex + 1) % filteredWorldClockTimezones.length;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      worldClockHighlightedIndex = worldClockHighlightedIndex <= 0 ? filteredWorldClockTimezones.length - 1 : worldClockHighlightedIndex - 1;
+    } else if (event.key === 'Enter' && worldClockHighlightedIndex >= 0) {
+      event.preventDefault();
+      handleWorldClockSelect(filteredWorldClockTimezones[worldClockHighlightedIndex].name);
+    } else if (event.key === 'Escape') {
+      worldClockQuery = '';
+      worldClockHighlightedIndex = -1;
+    }
+  }
+
+  function formatWorldClockTime(timezone, tick) {
+    return tick.toLocaleString('en-US', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  }
+
   // Lookup reactive declarations
   $: filteredTimezones = timezones.filter(tz =>
     tz.display_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -225,6 +331,14 @@
 
   $: fromDropdown = fromQuery && !fromTimezone && filteredFromTimezones.length > 0;
   $: toDropdown = toQuery && !toTimezone && filteredToTimezones.length > 0;
+
+  // World Clock reactive declarations
+  $: filteredWorldClockTimezones = timezones.filter(tz =>
+    tz.display_name.toLowerCase().includes(worldClockQuery.toLowerCase()) &&
+    !worldClocks.some(c => c.timezone === tz.name)
+  ).slice(0, 10);
+
+  $: worldClockDropdown = worldClockQuery && filteredWorldClockTimezones.length > 0;
 </script>
 
 <main>
@@ -236,6 +350,7 @@
     <div class="mode-toggle">
       <button class:active={mode === 'lookup'} on:click={() => mode = 'lookup'}>Lookup</button>
       <button class:active={mode === 'convert'} on:click={() => mode = 'convert'}>Convert</button>
+      <button class:active={mode === 'clock'} on:click={() => mode = 'clock'}>World Clock</button>
     </div>
 
     {#if mode === 'lookup'}
@@ -423,6 +538,56 @@
               <span class="value">{convertResult.to.is_dst ? 'Yes' : 'No'}</span>
             </div>
           </div>
+        </div>
+      {/if}
+    {/if}
+
+    {#if mode === 'clock'}
+      <div class="search-container">
+        <div class="search-box">
+          <label class="sr-only" for="wc-tz">Search and add a timezone</label>
+          <input
+            id="wc-tz"
+            type="text"
+            bind:value={worldClockQuery}
+            on:input={() => { worldClockHighlightedIndex = -1; }}
+            on:keydown={handleWorldClockKeydown}
+            placeholder="Search and add a timezone..."
+            class="search-input"
+          />
+
+          {#if worldClockDropdown}
+            <div class="dropdown">
+              {#each filteredWorldClockTimezones as tz, i}
+                <button
+                  class="dropdown-item"
+                  class:highlighted={i === worldClockHighlightedIndex}
+                  on:click={() => handleWorldClockSelect(tz.name)}
+                >
+                  {tz.display_name}
+                </button>
+              {/each}
+            </div>
+          {/if}
+        </div>
+      </div>
+
+      {#if worldClocks.length === 0}
+        <div class="world-clock-empty">No timezones added yet. Search above to add one.</div>
+      {:else}
+        <div class="world-clock-list">
+          {#each worldClocks as clock (clock.timezone)}
+            <div class="world-clock-card">
+              <div class="world-clock-header">
+                <h2 class="world-clock-name">{clock.timezone.replace(/_/g, ' ')}</h2>
+                <button class="remove-btn" on:click={() => removeWorldClock(clock.timezone)} title="Remove">&times;</button>
+              </div>
+              <div class="world-clock-time">{formatWorldClockTime(clock.timezone, currentTick)}</div>
+              <div class="world-clock-meta">
+                {clock.abbreviation} &middot; UTC{clock.utc_offset} &middot; DST: {clock.is_dst ? 'Yes' : 'No'}
+              </div>
+            </div>
+          {/each}
         </div>
       {/if}
     {/if}
@@ -765,6 +930,98 @@
 
   .tz-meta:last-child {
     border-bottom: none;
+  }
+
+  /* World Clock mode styles */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .world-clock-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .world-clock-card {
+    background: #fff;
+    border: 1px solid #e8eaed;
+    padding: 24px 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  .world-clock-card:first-child {
+    border-radius: 8px 8px 0 0;
+  }
+
+  .world-clock-card:last-child {
+    border-radius: 0 0 8px 8px;
+  }
+
+  .world-clock-card:only-child {
+    border-radius: 8px;
+  }
+
+  .world-clock-card + .world-clock-card {
+    border-top: none;
+  }
+
+  .world-clock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .world-clock-name {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #202124;
+    margin: 0 0 10px 0;
+  }
+
+  .world-clock-time {
+    font-size: 2rem;
+    font-weight: 300;
+    color: #1a73e8;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .world-clock-meta {
+    font-size: 13px;
+    color: #5f6368;
+  }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #9aa0a6;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: color 0.2s;
+  }
+
+  .remove-btn:hover {
+    color: #d93025;
+  }
+
+  .world-clock-empty {
+    text-align: center;
+    color: #9aa0a6;
+    font-size: 14px;
+    padding: 40px 20px;
   }
 
   footer {
