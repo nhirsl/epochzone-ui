@@ -1,6 +1,6 @@
 # Epoch Zone UI
 
-Svelte frontend for the Epoch Zone timezone API. Provides timezone lookup and conversion between timezones.
+Svelte frontend for the Epoch Zone timezone API. Live at [epoch.zone](https://epoch.zone). Provides timezone lookup, conversion, and a world clock with live-ticking multi-timezone display.
 
 ## Prerequisites
 
@@ -31,7 +31,11 @@ npm run preview
 npm run start
 ```
 
-In development, API requests are proxied to the production backend via Vite's dev server proxy. To point to a local backend instead, update the `proxy.target` in `vite.config.js`.
+In development, API requests are proxied to `localhost:3000` by default. To proxy to a different backend, set the `API_PROXY_TARGET` environment variable:
+
+```bash
+API_PROXY_TARGET=https://epochzone-production.up.railway.app npm run dev
+```
 
 ## Deploy
 
