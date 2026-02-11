@@ -639,22 +639,22 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    padding: clamp(0.75rem, 3vw, 1.25rem);
   }
 
   .container {
     width: 100%;
     max-width: 600px;
-    margin-top: 15vh;
+    margin-top: clamp(3vh, 10vw, 15vh);
   }
 
   .logo {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: clamp(1.25rem, 4vw, 1.875rem);
   }
 
   .logo h1 {
-    font-size: 3rem;
+    font-size: clamp(1.75rem, 5vw, 3rem);
     font-weight: 300;
     color: #202124;
     margin: 0;
@@ -667,7 +667,7 @@
   .mode-toggle {
     display: flex;
     justify-content: center;
-    margin-bottom: 30px;
+    margin-bottom: clamp(1.25rem, 4vw, 1.875rem);
     background: #f1f3f4;
     border-radius: 20px;
     padding: 4px;
@@ -677,12 +677,12 @@
   }
 
   .mode-toggle button {
-    padding: 8px 24px;
+    padding: clamp(0.375rem, 1.5vw, 0.5rem) clamp(0.875rem, 3vw, 1.5rem);
     border: none;
     border-radius: 20px;
     background: transparent;
     color: #5f6368;
-    font-size: 14px;
+    font-size: clamp(0.8rem, 2vw, 0.875rem);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -695,7 +695,7 @@
 
   .search-container {
     position: relative;
-    margin-bottom: 40px;
+    margin-bottom: clamp(1.5rem, 5vw, 2.5rem);
   }
 
   .search-box {
@@ -704,8 +704,8 @@
 
   .search-input {
     width: 100%;
-    padding: 14px 20px;
-    font-size: 16px;
+    padding: clamp(0.75rem, 2vw, 0.875rem) clamp(1rem, 3vw, 1.25rem);
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
     border: 1px solid #dfe1e5;
     border-radius: 24px;
     outline: none;
@@ -738,12 +738,12 @@
 
   .dropdown-item {
     width: 100%;
-    padding: 12px 20px;
+    padding: clamp(0.625rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.25rem);
     text-align: left;
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 14px;
+    font-size: clamp(0.8rem, 2vw, 0.875rem);
     color: #202124;
     transition: background-color 0.1s;
   }
@@ -756,25 +756,25 @@
   .loading {
     text-align: center;
     color: #5f6368;
-    font-size: 14px;
-    padding: 20px;
+    font-size: 0.875rem;
+    padding: 1.25rem;
   }
 
   .error {
     text-align: center;
     color: #d93025;
     background-color: #fce8e6;
-    padding: 12px 20px;
+    padding: 0.75rem 1.25rem;
     border-radius: 8px;
-    font-size: 14px;
-    margin-bottom: 20px;
+    font-size: 0.875rem;
+    margin-bottom: 1.25rem;
   }
 
   .result-card {
     background: #fff;
     border: 1px solid #e8eaed;
     border-radius: 8px;
-    padding: 30px;
+    padding: clamp(1.25rem, 4vw, 1.875rem);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.3s ease-in;
   }
@@ -791,29 +791,29 @@
   }
 
   .timezone-name {
-    font-size: 1.5rem;
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
     font-weight: 400;
     color: #202124;
-    margin: 0 0 15px 0;
+    margin: 0 0 0.9rem 0;
   }
 
   .time {
-    font-size: 2rem;
+    font-size: clamp(1.3rem, 4.5vw, 2rem);
     font-weight: 300;
     color: #1a73e8;
-    margin-bottom: 25px;
+    margin-bottom: 1.5rem;
     line-height: 1.3;
   }
 
   .metadata {
     display: grid;
-    gap: 12px;
+    gap: 0.75rem;
   }
 
   .meta-item {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
+    padding: 0.5rem 0;
     border-bottom: 1px solid #f1f3f4;
   }
 
@@ -823,13 +823,13 @@
 
   .label {
     color: #5f6368;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .value {
     color: #202124;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   /* Convert mode styles */
@@ -837,21 +837,21 @@
     background: #fff;
     border: 1px solid #e8eaed;
     border-radius: 8px;
-    padding: 24px;
+    padding: clamp(1rem, 3.5vw, 1.5rem);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
   }
 
   .convert-field {
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
   }
 
   .convert-label {
     display: block;
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: #5f6368;
-    margin-bottom: 6px;
+    margin-bottom: 0.375rem;
   }
 
   .optional-hint {
@@ -862,16 +862,16 @@
   .swap-row {
     display: flex;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
   }
 
   .swap-btn {
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 50%;
     border: 1px solid #dfe1e5;
     background: #fff;
-    font-size: 18px;
+    font-size: 1.125rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -893,8 +893,8 @@
 
   .convert-btn {
     width: 100%;
-    padding: 14px 20px;
-    font-size: 16px;
+    padding: clamp(0.75rem, 2vw, 0.875rem) 1.25rem;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
     font-weight: 500;
     border: none;
     border-radius: 24px;
@@ -902,7 +902,7 @@
     color: #fff;
     cursor: pointer;
     transition: background 0.2s;
-    margin-top: 8px;
+    margin-top: 0.5rem;
   }
 
   .convert-btn:hover:not(:disabled) {
@@ -917,7 +917,7 @@
   .convert-result {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 1rem;
     animation: fadeIn 0.3s ease-in;
   }
 
@@ -925,38 +925,38 @@
     background: #fff;
     border: 1px solid #e8eaed;
     border-radius: 8px;
-    padding: 24px;
+    padding: clamp(1rem, 3.5vw, 1.5rem);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   .tz-label {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #1a73e8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
   }
 
   .tz-name {
-    font-size: 1.2rem;
+    font-size: clamp(1rem, 3vw, 1.2rem);
     font-weight: 400;
     color: #202124;
-    margin: 0 0 10px 0;
+    margin: 0 0 0.625rem 0;
   }
 
   .tz-time {
-    font-size: 1.1rem;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
     font-weight: 300;
     color: #1a73e8;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
     line-height: 1.3;
   }
 
   .tz-meta {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
+    padding: 0.375rem 0;
     border-bottom: 1px solid #f1f3f4;
   }
 
@@ -986,7 +986,7 @@
   .world-clock-card {
     background: #fff;
     border: 1px solid #e8eaed;
-    padding: 24px 30px;
+    padding: clamp(1rem, 3vw, 1.5rem) clamp(1.25rem, 4vw, 1.875rem);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.3s ease-in;
   }
@@ -1014,28 +1014,28 @@
   }
 
   .world-clock-name {
-    font-size: 1.5rem;
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
     font-weight: 400;
     color: #202124;
-    margin: 0 0 10px 0;
+    margin: 0 0 0.625rem 0;
   }
 
   .world-clock-time {
-    font-size: 2rem;
+    font-size: clamp(1.4rem, 4.5vw, 2rem);
     font-weight: 300;
     color: #1a73e8;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
     line-height: 1.3;
   }
 
   .world-clock-date {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #5f6368;
-    margin-bottom: 8px;
+    margin-bottom: 0.5rem;
   }
 
   .world-clock-meta {
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: #5f6368;
   }
 
@@ -1045,7 +1045,7 @@
     font-size: 1.5rem;
     color: #9aa0a6;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 0.25rem 0.5rem;
     line-height: 1;
     border-radius: 4px;
     transition: color 0.2s;
@@ -1058,30 +1058,19 @@
   .world-clock-empty {
     text-align: center;
     color: #9aa0a6;
-    font-size: 14px;
-    padding: 40px 20px;
+    font-size: 0.875rem;
+    padding: 2.5rem 1.25rem;
   }
 
   footer {
     text-align: center;
-    margin-top: 40px;
+    margin-top: clamp(1.5rem, 5vw, 2.5rem);
     color: #5f6368;
-    font-size: 13px;
+    font-size: clamp(0.75rem, 2vw, 0.8125rem);
   }
 
+  /* Only keep breakpoint for layout changes that can't be handled with clamp() */
   @media (max-width: 640px) {
-    .container {
-      margin-top: 10vh;
-    }
-
-    .logo h1 {
-      font-size: 2rem;
-    }
-
-    .time {
-      font-size: 1.5rem;
-    }
-
     .convert-result {
       grid-template-columns: 1fr;
     }
