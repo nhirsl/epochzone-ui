@@ -313,6 +313,16 @@
     });
   }
 
+  function formatWorldClockDate(timezone, tick) {
+    return tick.toLocaleString('en-US', {
+      timeZone: timezone,
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
   // Lookup reactive declarations
   $: filteredTimezones = timezones.filter(tz =>
     tz.display_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -583,8 +593,9 @@
                 <button class="remove-btn" on:click={() => removeWorldClock(clock.timezone)} title="Remove">&times;</button>
               </div>
               <div class="world-clock-time">{formatWorldClockTime(clock.timezone, currentTick)}</div>
+              <div class="world-clock-date">{formatWorldClockDate(clock.timezone, currentTick)}</div>
               <div class="world-clock-meta">
-                {clock.abbreviation} &middot; UTC{clock.utc_offset} &middot; DST: {clock.is_dst ? 'Yes' : 'No'}
+                {clock.abbreviation} &middot; {clock.utc_offset} &middot; DST: {clock.is_dst ? 'Yes' : 'No'}
               </div>
             </div>
           {/each}
@@ -998,6 +1009,12 @@
     color: #1a73e8;
     margin-bottom: 8px;
     line-height: 1.3;
+  }
+
+  .world-clock-date {
+    font-size: 14px;
+    color: #5f6368;
+    margin-bottom: 8px;
   }
 
   .world-clock-meta {
