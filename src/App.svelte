@@ -120,23 +120,28 @@
     }
   }
 
-  function formatTime(isoString) {
+  function parseIso(isoString) {
     const [datePart, rest] = isoString.split('T');
     const [year, month, day] = datePart.split('-').map(Number);
     const timePart = rest.replace(/[+-]\d{2}:\d{2}$/, '');
     const [hour, minute, secondRaw] = timePart.split(':');
-    const second = Math.floor(Number(secondRaw));
+    return { year, month, day, hour: Number(hour), minute, second: Math.floor(Number(secondRaw)) };
+  }
 
+  function formatDate(isoString) {
+    const { year, month, day } = parseIso(isoString);
     const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const months = ['January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'];
+    const weekday = weekdays[new Date(year, month - 1, day).getDay()];
+    return `${weekday}, ${months[month - 1]} ${day}, ${year}`;
+  }
 
-    const d = new Date(year, month - 1, day);
-    const weekday = weekdays[d.getDay()];
-    const h = Number(hour) % 12 || 12;
-    const ampm = Number(hour) >= 12 ? 'PM' : 'AM';
-
-    return `${weekday}, ${months[month - 1]} ${day}, ${year}, ${String(h).padStart(2, '0')}:${minute}:${String(second).padStart(2, '0')} ${ampm}`;
+  function formatTime(isoString) {
+    const { hour, minute, second } = parseIso(isoString);
+    const h = hour % 12 || 12;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    return `${String(h).padStart(2, '0')}:${minute}:${String(second).padStart(2, '0')} ${ampm}`;
   }
 
   // Convert mode functions
@@ -227,9 +232,6 @@
     }
   }
 
-  function formatConvertTime(isoString) {
-    return formatTime(isoString);
-  }
 
   // World Clock functions
   function startTicking() {
@@ -414,6 +416,7 @@
       {#if timezoneInfo}
         <div class="result-card">
           <h2 class="timezone-name">{timezoneInfo.timezone.replace(/_/g, ' ')}</h2>
+          <div class="date">{formatDate(timezoneInfo.current_time)}</div>
           <div class="time">{formatTime(timezoneInfo.current_time)}</div>
 
           <div class="metadata">
@@ -528,7 +531,8 @@
           <div class="tz-column">
             <div class="tz-label">From</div>
             <h3 class="tz-name">{convertResult.from.timezone.replace(/_/g, ' ')}</h3>
-            <div class="tz-time">{formatConvertTime(convertResult.from.datetime)}</div>
+            <div class="tz-date">{formatDate(convertResult.from.datetime)}</div>
+            <div class="tz-time">{formatTime(convertResult.from.datetime)}</div>
             <div class="tz-meta">
               <span class="label">UTC Offset:</span>
               <span class="value">{convertResult.from.utc_offset}</span>
@@ -545,7 +549,8 @@
           <div class="tz-column">
             <div class="tz-label">To</div>
             <h3 class="tz-name">{convertResult.to.timezone.replace(/_/g, ' ')}</h3>
-            <div class="tz-time">{formatConvertTime(convertResult.to.datetime)}</div>
+            <div class="tz-date">{formatDate(convertResult.to.datetime)}</div>
+            <div class="tz-time">{formatTime(convertResult.to.datetime)}</div>
             <div class="tz-meta">
               <span class="label">UTC Offset:</span>
               <span class="value">{convertResult.to.utc_offset}</span>
@@ -791,6 +796,13 @@
     margin: 0 0 0.9rem 0;
   }
 
+  .date {
+    font-size: clamp(0.95rem, 3vw, 1.15rem);
+    font-weight: 400;
+    color: #555;
+    line-height: 1.3;
+  }
+
   .time {
     font-size: clamp(1.3rem, 4.5vw, 2rem);
     font-weight: 300;
@@ -937,6 +949,13 @@
     font-weight: 400;
     color: #202124;
     margin: 0 0 0.625rem 0;
+  }
+
+  .tz-date {
+    font-size: clamp(0.8rem, 2vw, 0.95rem);
+    font-weight: 400;
+    color: #555;
+    line-height: 1.3;
   }
 
   .tz-time {
