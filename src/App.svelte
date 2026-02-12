@@ -30,6 +30,15 @@
   let highlightedIndex = -1;
   let searchInput;
 
+  // Geolocation state
+  let showCoordinates = false;
+  let geoLat = '';
+  let geoLng = '';
+  let geoLoading = false;
+  let geoError = null;
+  let geoLocating = false;
+  let resolvedCoordinates = null;
+
   // Convert mode state
   let fromQuery = '';
   let toQuery = '';
@@ -100,7 +109,72 @@
     selectedTimezone = timezone;
     searchQuery = timezone.replace(/_/g, ' ');
     highlightedIndex = -1;
+    resolvedCoordinates = null;
     fetchTimezoneInfo();
+  }
+
+  async function fetchTimezoneByCoordinates() {
+    const lat = parseFloat(geoLat);
+    const lng = parseFloat(geoLng);
+
+    if (isNaN(lat) || lat < -90 || lat > 90) {
+      geoError = 'Latitude must be between -90 and 90.';
+      return;
+    }
+    if (isNaN(lng) || lng < -180 || lng > 180) {
+      geoError = 'Longitude must be between -180 and 180.';
+      return;
+    }
+
+    geoLoading = true;
+    geoError = null;
+    error = null;
+    timezoneInfo = null;
+    selectedTimezone = '';
+    searchQuery = '';
+
+    try {
+      const response = await fetch(`${API_BASE}/timezone-at?lat=${lat}&lng=${lng}`, { headers: apiHeaders });
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => null);
+        throw new Error(errBody?.error || 'Failed to look up timezone for coordinates');
+      }
+      timezoneInfo = await response.json();
+      resolvedCoordinates = { lat, lng };
+    } catch (err) {
+      error = err.message;
+    } finally {
+      geoLoading = false;
+    }
+  }
+
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      geoError = 'Geolocation is not supported by your browser.';
+      return;
+    }
+
+    geoLocating = true;
+    geoError = null;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        geoLat = position.coords.latitude.toFixed(4);
+        geoLng = position.coords.longitude.toFixed(4);
+        geoLocating = false;
+        fetchTimezoneByCoordinates();
+      },
+      (err) => {
+        geoLocating = false;
+        if (err.code === err.PERMISSION_DENIED) {
+          geoError = 'Location access denied. Enter coordinates manually.';
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          geoError = 'Location unavailable. Enter coordinates manually.';
+        } else {
+          geoError = 'Could not determine location. Enter coordinates manually.';
+        }
+      }
+    );
   }
 
   function handleKeydown(event) {
@@ -385,7 +459,7 @@
             type="text"
             bind:this={searchInput}
             bind:value={searchQuery}
-            on:input={() => { selectedTimezone = ''; highlightedIndex = -1; }}
+            on:input={() => { selectedTimezone = ''; highlightedIndex = -1; resolvedCoordinates = null; }}
             on:keydown={handleKeydown}
             placeholder="Search for a timezone..."
             class="search-input"
@@ -405,7 +479,30 @@
             </div>
           {/if}
         </div>
+        <button class="coord-toggle" on:click={() => { showCoordinates = !showCoordinates }}>
+          {showCoordinates ? '▾' : '▸'} Or search by coordinates
+        </button>
       </div>
+
+      {#if showCoordinates}
+        <div class="coord-section">
+          <div class="coord-inputs">
+            <input type="number" bind:value={geoLat} placeholder="Latitude" step="any" min="-90" max="90" class="coord-input" />
+            <input type="number" bind:value={geoLng} placeholder="Longitude" step="any" min="-180" max="180" class="coord-input" />
+          </div>
+          <div class="coord-actions">
+            <button class="coord-btn" on:click={fetchTimezoneByCoordinates} disabled={geoLoading}>
+              {geoLoading ? 'Looking up...' : 'Look up'}
+            </button>
+            <button class="coord-btn coord-btn-secondary" on:click={useMyLocation} disabled={geoLocating}>
+              {geoLocating ? 'Locating...' : 'Use my location'}
+            </button>
+          </div>
+          {#if geoError}
+            <div class="geo-error">{geoError}</div>
+          {/if}
+        </div>
+      {/if}
 
       {#if loading}
         <div class="loading">Loading...</div>
@@ -434,6 +531,12 @@
               <span class="label">DST Active:</span>
               <span class="value">{timezoneInfo.is_dst ? 'Yes' : 'No'}</span>
             </div>
+            {#if resolvedCoordinates}
+              <div class="meta-item">
+                <span class="label">Coordinates:</span>
+                <span class="value">{Math.abs(resolvedCoordinates.lat)}&deg;{resolvedCoordinates.lat >= 0 ? 'N' : 'S'}, {Math.abs(resolvedCoordinates.lng)}&deg;{resolvedCoordinates.lng >= 0 ? 'E' : 'W'}</span>
+              </div>
+            {/if}
           </div>
         </div>
       {/if}
@@ -849,6 +952,91 @@
     color: #202124;
     font-weight: 500;
     font-size: 0.875rem;
+  }
+
+  /* Coordinate lookup styles */
+  .coord-toggle {
+    background: none;
+    border: none;
+    color: #5f6368;
+    font-size: 0.875rem;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    transition: color 0.2s;
+  }
+
+  .coord-toggle:hover {
+    color: #1a73e8;
+  }
+
+  .coord-section {
+    margin-bottom: clamp(1.5rem, 5vw, 2.5rem);
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  .coord-inputs {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .coord-input {
+    flex: 1;
+    padding: clamp(0.625rem, 2vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    border: 1px solid #dfe1e5;
+    border-radius: 8px;
+    outline: none;
+    transition: box-shadow 0.2s;
+    box-sizing: border-box;
+  }
+
+  .coord-input:focus {
+    box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+    border-color: transparent;
+  }
+
+  .coord-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .coord-btn {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    background: #1a73e8;
+    color: #fff;
+  }
+
+  .coord-btn:hover:not(:disabled) {
+    background: #1557b0;
+  }
+
+  .coord-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .coord-btn-secondary {
+    background: #f1f3f4;
+    color: #202124;
+  }
+
+  .coord-btn-secondary:hover:not(:disabled) {
+    background: #e8eaed;
+  }
+
+  .geo-error {
+    color: #d93025;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
   }
 
   /* Convert mode styles */
