@@ -120,18 +120,22 @@
     }
   }
 
-  function formatTime(isoString) {
-    const date = new Date(isoString);
-    return date.toLocaleString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      timeZoneName: 'short'
-    });
+  function formatTime(isoString, abbreviation) {
+    const [datePart, rest] = isoString.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const timePart = rest.replace(/[+-]\d{2}:\d{2}$/, '');
+    const [hour, minute, second] = timePart.split(':').map(Number);
+
+    const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const d = new Date(year, month - 1, day);
+    const weekday = weekdays[d.getDay()];
+    const h = hour % 12 || 12;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+
+    return `${weekday}, ${months[month - 1]} ${day}, ${year}, ${String(h).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')} ${ampm} ${abbreviation}`;
   }
 
   // Convert mode functions
@@ -420,7 +424,7 @@
       {#if timezoneInfo}
         <div class="result-card">
           <h2 class="timezone-name">{timezoneInfo.timezone.replace(/_/g, ' ')}</h2>
-          <div class="time">{formatTime(timezoneInfo.current_time)}</div>
+          <div class="time">{formatTime(timezoneInfo.current_time, timezoneInfo.abbreviation)}</div>
 
           <div class="metadata">
             <div class="meta-item">
