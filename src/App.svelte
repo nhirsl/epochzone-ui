@@ -35,7 +35,8 @@
   let toQuery = '';
   let fromTimezone = '';
   let toTimezone = '';
-  let convertDatetime = '';
+  let convertDate = '';
+  let convertTime_ = '';
   let convertResult = null;
   let convertLoading = false;
   let convertError = null;
@@ -209,10 +210,11 @@
     convertError = null;
     convertResult = null;
 
-    let datetime = convertDatetime;
-    if (!datetime) {
-      datetime = new Date().toLocaleString('sv', { timeZone: fromTimezone }).replace(' ', 'T');
-    }
+    const now = new Date().toLocaleString('sv', { timeZone: fromTimezone }).replace(' ', 'T');
+    const [nowDate, nowTime] = now.split('T');
+    const date = convertDate || nowDate;
+    const time = convertTime_ || nowTime;
+    const datetime = `${date}T${time}`;
 
     try {
       const response = await fetch(`${API_BASE}/convert`, {
@@ -500,11 +502,22 @@
         </div>
 
         <div class="convert-field">
-          <label class="convert-label" for="convert-datetime">Date & time <span class="optional-hint">(optional — defaults to now)</span></label>
+          <label class="convert-label" for="convert-date">Date <span class="optional-hint">(optional — defaults to today)</span></label>
           <input
-            id="convert-datetime"
-            type="datetime-local"
-            bind:value={convertDatetime}
+            id="convert-date"
+            type="date"
+            bind:value={convertDate}
+            class="search-input datetime-input"
+          />
+        </div>
+
+        <div class="convert-field">
+          <label class="convert-label" for="convert-time">Time <span class="optional-hint">(optional — defaults to now)</span></label>
+          <input
+            id="convert-time"
+            type="time"
+            step="1"
+            bind:value={convertTime_}
             class="search-input datetime-input"
           />
         </div>
