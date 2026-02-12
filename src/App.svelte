@@ -120,11 +120,12 @@
     }
   }
 
-  function formatTime(isoString, abbreviation) {
+  function formatTime(isoString) {
     const [datePart, rest] = isoString.split('T');
     const [year, month, day] = datePart.split('-').map(Number);
     const timePart = rest.replace(/[+-]\d{2}:\d{2}$/, '');
-    const [hour, minute, second] = timePart.split(':').map(Number);
+    const [hour, minute, secondRaw] = timePart.split(':');
+    const second = Math.floor(Number(secondRaw));
 
     const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const months = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -132,10 +133,10 @@
 
     const d = new Date(year, month - 1, day);
     const weekday = weekdays[d.getDay()];
-    const h = hour % 12 || 12;
-    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const h = Number(hour) % 12 || 12;
+    const ampm = Number(hour) >= 12 ? 'PM' : 'AM';
 
-    return `${weekday}, ${months[month - 1]} ${day}, ${year}, ${String(h).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')} ${ampm} ${abbreviation}`;
+    return `${weekday}, ${months[month - 1]} ${day}, ${year}, ${String(h).padStart(2, '0')}:${minute}:${String(second).padStart(2, '0')} ${ampm}`;
   }
 
   // Convert mode functions
@@ -227,18 +228,7 @@
   }
 
   function formatConvertTime(isoString) {
-    // Backend returns datetime already localized (e.g. "2026-02-18T17:15:00+01:00")
-    // Strip the offset so JS treats it as local time, preserving the correct hour
-    const date = new Date(isoString.replace(/[+-]\d{2}:\d{2}$/, ''));
-    return date.toLocaleString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
+    return formatTime(isoString);
   }
 
   // World Clock functions
@@ -424,7 +414,7 @@
       {#if timezoneInfo}
         <div class="result-card">
           <h2 class="timezone-name">{timezoneInfo.timezone.replace(/_/g, ' ')}</h2>
-          <div class="time">{formatTime(timezoneInfo.current_time, timezoneInfo.abbreviation)}</div>
+          <div class="time">{formatTime(timezoneInfo.current_time)}</div>
 
           <div class="metadata">
             <div class="meta-item">
