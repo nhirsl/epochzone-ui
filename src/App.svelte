@@ -1037,14 +1037,14 @@
     font-size: clamp(1.4rem, 4.5vw, 2rem);
     font-weight: 300;
     color: #1a73e8;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
     line-height: 1.3;
   }
 
   .world-clock-date {
     font-size: 0.875rem;
     color: #5f6368;
-    margin-bottom: 0.5rem;
+    line-height: 1.3;
   }
 
   .world-clock-meta {
