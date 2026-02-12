@@ -608,8 +608,8 @@
                 <h2 class="world-clock-name">{clock.timezone.replace(/_/g, ' ')}</h2>
                 <button class="remove-btn" on:click={() => removeWorldClock(clock.timezone)} title="Remove">&times;</button>
               </div>
-              <div class="world-clock-time">{formatWorldClockTime(clock.timezone, currentTick)}</div>
               <div class="world-clock-date">{formatWorldClockDate(clock.timezone, currentTick)}</div>
+              <div class="world-clock-time">{formatWorldClockTime(clock.timezone, currentTick)}</div>
               <div class="world-clock-meta">
                 {clock.abbreviation} &middot; {clock.utc_offset} &middot; DST: {clock.is_dst ? 'Yes' : 'No'}
               </div>
